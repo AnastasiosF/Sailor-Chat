@@ -1,0 +1,110 @@
+/* SailorChat Home Page Styles */
+
+.home-container .ant-layout-header {
+  border-bottom: 1px solid #f0f0f0;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05);
+}
+
+.home-container .ant-card {
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  transition: box-shadow 0.3s ease;
+}
+
+.home-container .ant-card:hover {
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+}
+
+.home-container .ant-btn {
+  transition: all 0.3s ease;
+  border-radius: 8px;
+}
+
+.home-container .ant-btn:hover {
+  transform: translateY(-1px);
+}
+
+.home-container .ant-list-item {
+  border-radius: 8px;
+  margin-bottom: 8px;
+  padding: 12px 16px;
+  transition: background-color 0.3s ease;
+}
+
+.home-container .ant-list-item:hover {
+  background-color: #f8f9fa;
+}
+
+.home-container .quick-actions .ant-btn {
+  height: 60px;
+  font-size: 16px;
+  font-weight: 500;
+}
+
+.home-container .status-indicator {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  margin-right: 6px;
+}
+
+.home-container .status-indicator.online {
+  background-color: #52c41a;
+}
+
+.home-container .status-indicator.away {
+  background-color: #faad14;
+}
+
+.home-container .status-indicator.busy {
+  background-color: #ff4d4f;
+}
+
+.home-container .status-indicator.offline {
+  background-color: #8c8c8c;
+}
+
+.home-container .ant-modal .ant-form-item-label {
+  font-weight: 500;
+}
+
+.home-container .ant-modal .ant-radio-wrapper {
+  display: flex;
+  align-items: flex-start;
+  margin-bottom: 12px;
+  padding: 8px;
+  border-radius: 6px;
+  transition: background-color 0.3s ease;
+}
+
+.home-container .ant-modal .ant-radio-wrapper:hover {
+  background-color: #f5f5f5;
+}
+
+.home-container .welcome-text {
+  color: #595959;
+  font-weight: 400;
+}
+
+.home-container .branding {
+  background: linear-gradient(135deg, #1890ff, #096dd9);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+@media (max-width: 768px) {
+  .home-container .ant-layout-header {
+    padding: 0 16px;
+  }
+  
+  .home-container .ant-layout-content {
+    padding: 16px;
+  }
+  
+  .home-container .quick-actions .ant-btn {
+    height: 50px;
+    font-size: 14px;
+  }
+}

@@ -1,0 +1,43 @@
+{
+  "name": "sailorchat",
+  "version": "1.0.0",
+  "description": "Secure chat application with Supabase, Express.js, and React",
+  "private": true,
+  "scripts": {
+    "setup": "npm run setup:shared && npm run setup:api && npm run setup:client",
+    "setup:shared": "cd shared && npm install && npm run build",
+    "setup:api": "cd api && npm install",
+    "setup:client": "cd client && npm install",
+    "dev": "concurrently \"npm run dev:api\" \"npm run dev:client\"",
+    "dev:api": "cd api && npm run dev",
+    "dev:client": "cd client && npm run dev",
+    "build": "npm run build:shared && npm run build:api && npm run build:client",
+    "build:shared": "cd shared && npm run build",
+    "build:api": "cd api && npm run build",
+    "build:client": "cd client && npm run build",
+    "clean": "npm run clean:shared && npm run clean:api && npm run clean:client",
+    "clean:shared": "cd shared && rm -rf node_modules dist",
+    "clean:api": "cd api && rm -rf node_modules dist",
+    "clean:client": "cd client && rm -rf node_modules dist"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2"
+  },
+  "workspaces": [
+    "shared",
+    "api",
+    "client"
+  ],
+  "keywords": [
+    "chat",
+    "messaging",
+    "real-time",
+    "supabase",
+    "express",
+    "react",
+    "typescript",
+    "websocket"
+  ],
+  "author": "SailorChat Team",
+  "license": "MIT"
+}
