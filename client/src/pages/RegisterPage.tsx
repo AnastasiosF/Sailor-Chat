@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
-import { Form, Input, Button, Card, Typography, message, Space, Alert, Spin } from 'antd';
+import { Form, Input, Button, Card, Typography, message, Space, Alert } from 'antd';
 import { UserOutlined, LockOutlined, MailOutlined, IdcardOutlined } from '@ant-design/icons';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { authApi } from '../services/api';
 import { RegisterRequest } from '../../../shared/src/types';
 
@@ -12,7 +12,6 @@ const RegisterPage: React.FC = () => {
   const [registrationStep, setRegistrationStep] = useState<'form' | 'verification'>('form');
   const [registeredEmail, setRegisteredEmail] = useState<string>('');
   const [resendLoading, setResendLoading] = useState(false);
-  const navigate = useNavigate();
 
   const onFinish = async (values: RegisterRequest) => {
     setLoading(true);

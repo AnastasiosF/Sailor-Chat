@@ -1,15 +1,14 @@
 import axios, { AxiosResponse, AxiosError } from 'axios';
 import {
   ApiResponse,
-  AuthTokens,
   LoginRequest,
   RegisterRequest,
-  RefreshTokenRequest,
   VerifyEmailRequest,
   ResendVerificationRequest
 } from '../../../shared/src/types';
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001/api';
+// Get API URL with fallback
+const API_BASE_URL = (import.meta as any).env?.VITE_API_URL || 'http://localhost:3001/api';
 
 // Create axios instance
 const api = axios.create({

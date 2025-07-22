@@ -10,10 +10,26 @@ interface CreateChatData {
   participant_id?: string; // For direct messages
 }
 
+interface MessagePagination {
+  page: number;
+  limit: number;
+  total: number;
+  has_more: boolean;
+  next_cursor?: string;
+}
+
+interface ChatMessages {
+  messages: MessageWithSender[];
+  pagination: MessagePagination;
+  isLoading: boolean;
+  hasInitialLoad: boolean;
+}
+
 interface ChatStore {
   chats: Chat[];
   currentChat: Chat | null;
   messages: Record<string, MessageWithSender[]>;
+  chatMessages: Record<string, ChatMessages>;
   isLoading: boolean;
   error: string | null;
 
@@ -25,6 +41,11 @@ interface ChatStore {
   removeChat: (chatId: string) => void;
   addMessage: (chatId: string, message: MessageWithSender) => void;
   
+  // Enhanced Message Actions
+  initializeChatMessages: (chatId: string) => void;
+  appendOlderMessages: (chatId: string, messages: MessageWithSender[], pagination: MessagePagination) => void;
+  prependNewMessage: (chatId: string, message: MessageWithSender) => void;
+  
   // API Actions
   createChat: (data: CreateChatData) => Promise<Chat>;
   searchChats: (query: string, type?: ChatType) => Promise<Chat[]>;
@@ -32,7 +53,8 @@ interface ChatStore {
   loadUserChats: () => Promise<void>;
   joinChat: (chatId: string) => Promise<void>;
   leaveChat: (chatId: string) => Promise<void>;
-  loadMessages: (chatId: string) => Promise<void>;
+  loadMessages: (chatId: string, page?: number, cursor?: string) => Promise<void>;
+  loadMoreMessages: (chatId: string) => Promise<void>;
   sendMessage: (chatId: string, content: string, type?: string) => Promise<MessageWithSender>;
   
   // Utility actions
@@ -44,6 +66,7 @@ export const useChatStore = create<ChatStore>((set, get) => ({
   chats: [],
   currentChat: null,
   messages: {},
+  chatMessages: {},
   isLoading: false,
   error: null,
 
@@ -69,11 +92,99 @@ export const useChatStore = create<ChatStore>((set, get) => ({
     if (messageExists) {
       return state; // Don't add duplicate message
     }
-    
-    return {
+
+    // Update both legacy and new message structures
+    const updatedState = {
       messages: {
         ...state.messages,
         [chatId]: [...existingMessages, message]
+      }
+    };
+
+    // Update new chatMessages structure if it exists
+    if (state.chatMessages[chatId]) {
+      get().prependNewMessage(chatId, message);
+    }
+    
+    return updatedState;
+  }),
+
+  // Enhanced Message Actions
+  initializeChatMessages: (chatId) => set((state) => ({
+    chatMessages: {
+      ...state.chatMessages,
+      [chatId]: {
+        messages: [],
+        pagination: {
+          page: 1,
+          limit: 50,
+          total: 0,
+          has_more: true,
+        },
+        isLoading: false,
+        hasInitialLoad: false,
+      }
+    }
+  })),
+
+  appendOlderMessages: (chatId, newMessages, pagination) => set((state) => {
+    const existingChat = state.chatMessages[chatId];
+    if (!existingChat) return state;
+
+    // Filter out duplicates by ID
+    const existingIds = new Set(existingChat.messages.map(msg => msg.id));
+    const uniqueNewMessages = newMessages.filter(msg => !existingIds.has(msg.id));
+
+    return {
+      chatMessages: {
+        ...state.chatMessages,
+        [chatId]: {
+          ...existingChat,
+          messages: [...uniqueNewMessages, ...existingChat.messages],
+          pagination,
+          isLoading: false,
+        }
+      }
+    };
+  }),
+
+  prependNewMessage: (chatId, message) => set((state) => {
+    const existingChat = state.chatMessages[chatId];
+    if (!existingChat) {
+      // Initialize if doesn't exist
+      return {
+        chatMessages: {
+          ...state.chatMessages,
+          [chatId]: {
+            messages: [message],
+            pagination: {
+              page: 1,
+              limit: 50,
+              total: 1,
+              has_more: false,
+            },
+            isLoading: false,
+            hasInitialLoad: true,
+          }
+        }
+      };
+    }
+
+    // Check if message already exists to prevent duplicates
+    const messageExists = existingChat.messages.some(msg => msg.id === message.id);
+    if (messageExists) return state;
+
+    return {
+      chatMessages: {
+        ...state.chatMessages,
+        [chatId]: {
+          ...existingChat,
+          messages: [...existingChat.messages, message],
+          pagination: {
+            ...existingChat.pagination,
+            total: existingChat.pagination.total + 1,
+          }
+        }
       }
     };
   }),
@@ -172,25 +283,88 @@ export const useChatStore = create<ChatStore>((set, get) => ({
     }
   },
 
-  loadMessages: async (chatId: string) => {
-    set({ isLoading: true, error: null });
+  loadMessages: async (chatId: string, page = 1, cursor?: string) => {
+    const state = get();
+    
+    // Initialize chat messages if not exists
+    if (!state.chatMessages[chatId]) {
+      get().initializeChatMessages(chatId);
+    }
+
+    // Set loading state
+    set((state) => ({
+      chatMessages: {
+        ...state.chatMessages,
+        [chatId]: {
+          ...state.chatMessages[chatId],
+          isLoading: true
+        }
+      }
+    }));
+
     try {
-      const response = await api.get(`/messages/chat/${chatId}`);
-      // Handle paginated response structure: response.data.data.data
-      const messages = response.data.data?.data || response.data.data || [];
-      
-      set((state) => ({
-        messages: {
-          ...state.messages,
-          [chatId]: messages
-        },
-        isLoading: false
-      }));
+      const params = new URLSearchParams();
+      params.append('page', page.toString());
+      params.append('limit', '50');
+      if (cursor) {
+        params.append('cursor', cursor);
+      }
+
+      const response = await api.get(`/messages/chat/${chatId}?${params.toString()}`);
+      const data = response.data.data;
+      const messages = data.data || [];
+      const pagination = data.pagination;
+
+      if (page === 1) {
+        // Initial load - replace all messages
+        set((state) => ({
+          chatMessages: {
+            ...state.chatMessages,
+            [chatId]: {
+              messages: messages.reverse(), // Reverse to show newest at bottom
+              pagination,
+              isLoading: false,
+              hasInitialLoad: true,
+            }
+          },
+          // Keep legacy messages for compatibility
+          messages: {
+            ...state.messages,
+            [chatId]: messages.reverse()
+          }
+        }));
+      } else {
+        // Load more - append older messages
+        get().appendOlderMessages(chatId, messages.reverse(), pagination);
+      }
     } catch (error: any) {
       const errorMessage = error.response?.data?.message || 'Failed to load messages';
-      set({ error: errorMessage, isLoading: false });
+      set((state) => ({
+        chatMessages: {
+          ...state.chatMessages,
+          [chatId]: {
+            ...state.chatMessages[chatId],
+            isLoading: false
+          }
+        },
+        error: errorMessage
+      }));
       throw new Error(errorMessage);
     }
+  },
+
+  loadMoreMessages: async (chatId: string) => {
+    const state = get();
+    const chatMessages = state.chatMessages[chatId];
+    
+    if (!chatMessages || !chatMessages.pagination.has_more || chatMessages.isLoading) {
+      return;
+    }
+
+    const nextPage = chatMessages.pagination.page + 1;
+    const cursor = chatMessages.pagination.next_cursor;
+    
+    await get().loadMessages(chatId, nextPage, cursor);
   },
 
   sendMessage: async (chatId: string, content: string, type = 'text') => {

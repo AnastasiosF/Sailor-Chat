@@ -7,6 +7,7 @@ import RegisterPage from './pages/RegisterPage';
 import VerifyEmailPage from './pages/VerifyEmailPage';
 import HomePage from './pages/HomePage';
 import ChatPage from './pages/ChatPage';
+import OptimizedChatPage from './pages/OptimizedChatPage';
 import ProtectedRoute from './components/ProtectedRoute';
 import './App.css';
 
@@ -58,12 +59,20 @@ const App: React.FC = () => {
                 path="/chat"
                 element={
                   <ProtectedRoute>
-                    <ChatPage />
+                    <OptimizedChatPage />
                   </ProtectedRoute>
                 }
               />
               <Route
                 path="/chat/:chatId"
+                element={
+                  <ProtectedRoute>
+                    <OptimizedChatPage />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/chat-legacy"
                 element={
                   <ProtectedRoute>
                     <ChatPage />
