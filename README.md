@@ -121,6 +121,28 @@ SailorChat/
 6. **Access the application**
    - Client: http://localhost:3000
    - API: http://localhost:3001
+   - **Swagger API Documentation**: http://localhost:3001/api-docs
+
+## 📚 API Documentation
+
+SailorChat provides comprehensive API documentation through multiple formats:
+
+### **Interactive Swagger UI** 🌐
+- **URL**: [http://localhost:3001/api-docs](http://localhost:3001/api-docs)
+- Test all endpoints directly in your browser
+- Built-in authentication with JWT tokens
+- Real-time request/response examples
+- Complete schema documentation
+
+### **Detailed Documentation** 📖
+- **API Guide**: See [`API_DOCUMENTATION.md`](API_DOCUMENTATION.md) for complete endpoint documentation
+- **Swagger Setup**: See [`SWAGGER_DOCUMENTATION.md`](SWAGGER_DOCUMENTATION.md) for interactive documentation
+
+### **OpenAPI Specification** 📄
+- **JSON Spec**: [http://localhost:3001/api-docs.json](http://localhost:3001/api-docs.json)
+- Use for Postman collection generation
+- Client SDK generation
+- Third-party integrations
 
 ## API Endpoints
 
