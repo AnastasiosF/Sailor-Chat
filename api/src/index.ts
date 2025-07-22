@@ -10,6 +10,7 @@ import { createServer } from 'http';
 import { Server } from 'socket.io';
 import routes from './routes';
 import { ApiResponse } from '../../shared/src/types';
+import { setupSwagger } from './config/swagger';
 
 // Load environment variables FIRST - Load development environment in development
 const envFile = process.env.NODE_ENV === 'production' ? '.env' : '.env.development';
@@ -60,6 +61,9 @@ app.use('/api', limiter);
 app.use(compression());
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
+
+// Swagger documentation setup
+setupSwagger(app);
 
 // Logging
 if (process.env.NODE_ENV !== 'test') {

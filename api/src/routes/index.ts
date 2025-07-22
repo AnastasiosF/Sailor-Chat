@@ -7,6 +7,39 @@ import e2eRoutes from './e2e-encryption.routes';
 
 const router = express.Router();
 
+/**
+ * @swagger
+ * tags:
+ *   name: Health
+ *   description: API health check endpoints
+ */
+
+/**
+ * @swagger
+ * /health:
+ *   get:
+ *     summary: Health check
+ *     tags: [Health]
+ *     security: []
+ *     responses:
+ *       200:
+ *         description: API is running
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 message:
+ *                   type: string
+ *                   example: "SailorChat API is running"
+ *                 timestamp:
+ *                   type: string
+ *                   format: date-time
+ *                   example: "2025-01-22T10:30:00.000Z"
+ */
 // Health check
 router.get('/health', (req, res) => {
   res.status(200).json({
