@@ -13,17 +13,15 @@ const { Text } = Typography;
 const ChatPage: React.FC = () => {
   const navigate = useNavigate();
   const { user } = useAuthStore();
-  const { 
-    chats, 
-    currentChat, 
-    messages, 
-    isLoading,
-    loadUserChats, 
-    loadMessages, 
-    sendMessage,
-    setCurrentChat,
-    addMessage 
-  } = useChatStore();
+  const chats = useChatStore(state => state.chats);
+  const currentChat = useChatStore(state => state.currentChat);
+  const messages = useChatStore(state => state.messages);
+  const isLoading = useChatStore(state => state.isLoading);
+  const loadUserChats = useChatStore(state => state.loadUserChats);
+  const loadMessages = useChatStore(state => state.loadMessages);
+  const sendMessage = useChatStore(state => state.sendMessage);
+  const setCurrentChat = useChatStore(state => state.setCurrentChat);
+  const addMessage = useChatStore(state => state.addMessage);
   const [newMessageContent, setNewMessageContent] = useState('');
   const [typingUsers, setTypingUsers] = useState<Map<string, string>>(new Map()); // userId -> username
   const [typingTimeout, setTypingTimeout] = useState<NodeJS.Timeout | null>(null);
@@ -44,30 +42,34 @@ const ChatPage: React.FC = () => {
     }
 
     return () => {
-      // Cleanup typing timeout on unmount
+      socketService.disconnect();
+    };
+  }, [user]);
+
+  // Cleanup typing timeout on unmount
+  useEffect(() => {
+    return () => {
       if (typingTimeout) {
         clearTimeout(typingTimeout);
       }
-      socketService.disconnect();
     };
-  }, [user, typingTimeout]);
+  }, [typingTimeout]);
 
   // Handle real-time messages
   useEffect(() => {
-    socketService.onNewMessage((message: MessageWithSender) => {
+    const handleNewMessage = (message: MessageWithSender) => {
       console.log('Received new message:', message);
       // Add the new message to the store
       addMessage(message.chat_id, message);
-    });
+    };
 
-    // Handle typing indicators
-    socketService.onUserTyping((data) => {
+    const handleUserTyping = (data: any) => {
       if (data.chatId === currentChat?.id && data.userId !== user?.id) {
         setTypingUsers(prev => new Map(prev).set(data.userId, data.username));
       }
-    });
+    };
 
-    socketService.onUserStoppedTyping((data) => {
+    const handleUserStoppedTyping = (data: any) => {
       if (data.chatId === currentChat?.id) {
         setTypingUsers(prev => {
           const newMap = new Map(prev);
@@ -75,7 +77,11 @@ const ChatPage: React.FC = () => {
           return newMap;
         });
       }
-    });
+    };
+
+    socketService.onNewMessage(handleNewMessage);
+    socketService.onUserTyping(handleUserTyping);
+    socketService.onUserStoppedTyping(handleUserStoppedTyping);
 
     return () => {
       socketService.offNewMessage();

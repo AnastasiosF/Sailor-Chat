@@ -18,7 +18,7 @@ const App: React.FC = () => {
       theme={{
         algorithm: theme.defaultAlgorithm,
         token: {
-          colorPrimary: '#1890ff',
+          colorPrimary: '#ff4d4f', // Ant Design red
           borderRadius: 8,
         },
       }}

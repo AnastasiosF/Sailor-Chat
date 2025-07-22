@@ -7,7 +7,7 @@ class SocketService {
   private username: string | null = null;
 
   connect(token: string, userId?: string, username?: string): void {
-    const serverUrl = (import.meta as any).env?.VITE_API_URL?.replace('/api', '') || 'http://localhost:3001';
+    const serverUrl = (import.meta as any).env?.VITE_WS_URL || 'http://localhost:3001';
     
     this.userId = userId || null;
     this.username = username || null;
@@ -24,6 +24,7 @@ class SocketService {
       
       // Send authentication data if available
       if (this.userId && this.username) {
+        console.log('Authenticating with userId:', this.userId, 'username:', this.username);
         this.socket?.emit('authenticate', {
           userId: this.userId,
           username: this.username
@@ -104,7 +105,11 @@ class SocketService {
 
   onNewMessage(callback: (message: MessageWithSender) => void): void {
     if (this.socket) {
-      this.socket.on('new_message', callback);
+      console.log('Setting up new_message listener');
+      this.socket.on('new_message', (message) => {
+        console.log('Socket received new_message event:', message);
+        callback(message);
+      });
     }
   }
 
